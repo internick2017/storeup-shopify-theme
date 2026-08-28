@@ -1,6 +1,6 @@
 # Store Up — archivo del storefront de Shopify
 
-Rescate completo del trabajo hecho sobre la tienda **storeup.store**, capturado el **2026-08-28**,
+Rescate COMPLETO del trabajo hecho sobre la tienda **storeup.store**, capturado el **2026-08-28**,
 antes de que venza la suscripción de Shopify y el sitio salga de línea.
 
 La tienda no generó ventas y no se va a seguir pagando. Cuando la cuenta cierre, el dominio deja de
@@ -58,21 +58,22 @@ y el popup traducidos, o sea el multi-idioma funcionando de verdad.
 
 ---
 
-## 🔴 Lo único que falta
+### `scripts/` — 109 scripts de la Admin API ✅
 
-**Los scripts Node de automatización de la Admin API.** No están en Shopify (viven en el disco de
-Nick) y no aparecieron en `E:\dev`. Son el código que registraba traducciones, actualizaba las
-políticas de la tienda y reescribía los menús de navegación.
+**La parte propia del proyecto.** El tema es Dawn personalizado, pero esto es código escrito desde
+cero: 109 scripts Node (ESM) que operaban la tienda por API en vez de a mano desde el editor visual.
 
-Es la parte **más valiosa** del proyecto, porque es código propio: el tema es Dawn personalizado,
-pero esos scripts los escribió él. Si aparecen (probar en Descargas o fuera de `E:\dev`), van a
-`scripts/` de este repo.
+Rescatados de `F:\tmp\` el 2026-08-28. Se encontraron gracias a las reglas de permisos guardadas en
+el `.claude/settings.json` del portfolio, que conservaban las rutas de ejecución.
 
-Los gotchas de esa automatización, que valen por sí solos:
-- `translationsRegister` exige el **digest del contenido actual** o falla.
-- `shopPolicyUpdate` **falla en silencio** si no se le pasa el `type` de política.
-- `menuUpdate` **reemplaza el menú entero**, no aplica un patch.
-- En dropshipping, el inventario va con `tracked=false`.
+Cubren traducciones, idiomas y mercados, navegación, políticas legales, configuración del tema,
+catálogo y envíos, **más un `verify-*` por cada área**: cada cambio se comprobaba contra la tienda
+real en lugar de darse por hecho. Ver `scripts/README.md` para el detalle y los comportamientos de
+la API que hay que conocer (el digest de `translationsRegister`, el `type` que `shopPolicyUpdate`
+necesita para no fallar en silencio, y que `menuUpdate` reemplaza el menú entero).
+
+🔒 Ningún script tiene el token hardcodeado: todos lo leen de un archivo de entorno.
+Verificado en todo el historial de git, no hay ningún `shpat_` real.
 
 ---
 
