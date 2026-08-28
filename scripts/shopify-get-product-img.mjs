@@ -1,0 +1,11 @@
+import fs from 'fs';
+const env = fs.readFileSync('f:/tmp/shopify.env','utf8');
+const TOKEN = (env.match(/SHOPIFY_ACCESS_TOKEN=(\S+)/)||[])[1];
+const SHOP = (env.match(/SHOPIFY_SHOP=(\S+)/)||[])[1] || 'yxx05u-wr.myshopify.com';
+const q = `{ product(id:"gid://shopify/Product/8737067827358"){ title media(first:10){ edges{ node{ ... on MediaImage { image { url width height } } } } } } }`;
+const r = await fetch(`https://${SHOP}/admin/api/2025-01/graphql.json`,{method:'POST',headers:{'X-Shopify-Access-Token':TOKEN,'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+const j = await r.json();
+const title = j.data?.product?.title;
+console.log('TITLE:', title);
+const imgs = (j.data?.product?.media?.edges||[]).map(e=>e.node?.image).filter(Boolean);
+imgs.forEach((im,i)=>console.log(`IMG${i}: ${im.width}x${im.height} ${im.url}`));
