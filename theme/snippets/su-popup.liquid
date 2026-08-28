@@ -1,0 +1,169 @@
+{%- comment -%}
+  Store Up — Popup captura BIENVENIDO10 (P1-a).
+  Aditivo y reversible: para quitar, borra este snippet y la línea {% render 'su-popup' %} de layout/theme.liquid.
+  Captura vía formulario nativo de Shopify (customer) con SUBMIT NATIVO -> compatible con la protección
+  anti-spam/captcha de Shopify -> crea el cliente con consentimiento de marketing -> dispara la
+  automatización de bienvenida de Shopify Email. Tras la recarga, revela el código en pantalla.
+  Locale-aware: ES default, EN para locales no-español.
+{%- endcomment -%}
+{%- assign su_code = 'BIENVENIDO10' -%}
+{%- assign su_prod = collections.all.products.first -%}
+{%- if su_prod -%}{%- assign su_redirect = su_prod.url -%}{%- else -%}{%- assign su_redirect = routes.root_url -%}{%- endif -%}
+
+{%- assign su_lang = request.locale.iso_code | slice: 0, 2 -%}
+{%- if su_lang == 'en' -%}
+  {%- assign su_title      = 'Before you go… 🌅' -%}
+  {%- assign su_body_pre   = 'Get ' -%}
+  {%- assign su_body_post  = ' off your first order and transform your room into a forever sunset.' -%}
+  {%- assign su_placeholder= 'Your email' -%}
+  {%- assign su_cta        = 'Get my -10%' -%}
+  {%- assign su_fine1      = 'No spam. Unsubscribe anytime.' -%}
+  {%- assign su_success_h  = 'Done! 🎉' -%}
+  {%- assign su_success_p  = 'Here is your welcome discount:' -%}
+  {%- assign su_copy       = 'Copy' -%}
+  {%- assign su_copied     = 'Copied!' -%}
+  {%- assign su_apply      = 'Apply & shop' -%}
+  {%- assign su_fine2      = 'Code is applied automatically when you click the button.' -%}
+  {%- assign su_aria       = 'Welcome discount' -%}
+{%- elsif su_lang == 'pt' -%}
+  {%- assign su_title      = 'Antes de sair… 🌅' -%}
+  {%- assign su_body_pre   = 'Ganhe ' -%}
+  {%- assign su_body_post  = ' na sua primeira compra e transforme seu quarto em um pôr do sol infinito.' -%}
+  {%- assign su_placeholder= 'Seu email' -%}
+  {%- assign su_cta        = 'Quero meu -10%' -%}
+  {%- assign su_fine1      = 'Sem spam. Cancele quando quiser.' -%}
+  {%- assign su_success_h  = 'Pronto! 🎉' -%}
+  {%- assign su_success_p  = 'Aqui está seu desconto de boas-vindas:' -%}
+  {%- assign su_copy       = 'Copiar' -%}
+  {%- assign su_copied     = 'Copiado!' -%}
+  {%- assign su_apply      = 'Aplicar e comprar' -%}
+  {%- assign su_fine2      = 'O código é aplicado automaticamente ao clicar no botão.' -%}
+  {%- assign su_aria       = 'Desconto de boas-vindas' -%}
+{%- else -%}
+  {%- assign su_title      = 'Antes de irte… 🌅' -%}
+  {%- assign su_body_pre   = 'Llévate ' -%}
+  {%- assign su_body_post  = ' en tu primera compra y convierte tu cuarto en un atardecer infinito.' -%}
+  {%- assign su_placeholder= 'Tu email' -%}
+  {%- assign su_cta        = 'Quiero mi -10%' -%}
+  {%- assign su_fine1      = 'Sin spam. Cancela cuando quieras.' -%}
+  {%- assign su_success_h  = '¡Listo! 🎉' -%}
+  {%- assign su_success_p  = 'Aquí tienes tu descuento de bienvenida:' -%}
+  {%- assign su_copy       = 'Copiar' -%}
+  {%- assign su_copied     = '¡Copiado!' -%}
+  {%- assign su_apply      = 'Aplicar y comprar' -%}
+  {%- assign su_fine2      = 'El código se aplica solo al pulsar el botón.' -%}
+  {%- assign su_aria       = 'Descuento de bienvenida' -%}
+{%- endif -%}
+
+<style>
+  .su-pop__overlay{position:fixed;inset:0;background:rgba(20,12,8,.55);z-index:9998;opacity:0;visibility:hidden;transition:opacity .25s ease;}
+  .su-pop__overlay.is-open{opacity:1;visibility:visible;}
+  .su-pop{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%);z-index:9999;width:min(92vw,420px);
+    background:#fff8f1;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);
+    opacity:0;visibility:hidden;transition:opacity .25s ease, transform .25s ease;font-family:inherit;}
+  .su-pop.is-open{opacity:1;visibility:visible;transform:translate(-50%,-50%);}
+  .su-pop__art{height:120px;background:linear-gradient(160deg,#ff9d6c 0%,#ff6f91 45%,#b06ab3 100%);position:relative;display:block;}
+  .su-pop__art > span{position:absolute;left:50%;bottom:-46px;transform:translateX(-50%);
+    width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#ffe7b3,#ffb36b 60%,#ff8a5c);box-shadow:0 0 50px rgba(255,170,90,.7);}
+  .su-pop__body{padding:58px 26px 26px;text-align:center;}
+  .su-pop__h{margin:0 0 6px;font-size:1.45rem;line-height:1.2;color:#3a2218;font-weight:700;}
+  .su-pop__p{margin:0 0 16px;font-size:.95rem;color:#6b4a3a;}
+  .su-pop__field{display:flex;flex-direction:column;gap:10px;}
+  .su-pop__input{width:100%;padding:13px 14px;border:1px solid #e6cdb8;border-radius:10px;font-size:1rem;background:#fff;color:#3a2218;box-sizing:border-box;}
+  .su-pop__btn{display:block;width:100%;padding:13px 14px;border:0;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;
+    background:linear-gradient(135deg,#ff7e5f,#ff5f8a);color:#fff;transition:filter .15s;text-decoration:none;box-sizing:border-box;}
+  .su-pop__btn:hover{filter:brightness(1.05);}
+  .su-pop__close{position:absolute;top:10px;right:12px;width:32px;height:32px;border:0;border-radius:50%;
+    background:rgba(255,255,255,.85);color:#3a2218;font-size:18px;line-height:1;cursor:pointer;z-index:2;}
+  .su-pop__fine{margin:12px 0 0;font-size:.72rem;color:#9a7c6c;}
+  .su-pop__code{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 14px;
+    border:2px dashed #ff7e5f;border-radius:10px;padding:12px;background:#fff;}
+  .su-pop__code b{font-size:1.2rem;letter-spacing:1px;color:#d34d3f;}
+  .su-pop__copy{border:0;background:#3a2218;color:#fff;border-radius:8px;padding:7px 10px;font-size:.8rem;cursor:pointer;white-space:nowrap;}
+  .su-pop__hide{display:none!important;}
+  @media (max-width:480px){.su-pop__art{height:96px}.su-pop__body{padding:50px 18px 22px}}
+</style>
+
+<div class="su-pop__overlay" id="suPopOverlay" data-su-close></div>
+<div class="su-pop" id="suPop" role="dialog" aria-modal="true" aria-label="{{ su_aria }}">
+  <div class="su-pop__art"><span></span></div>
+  <button type="button" class="su-pop__close" data-su-close aria-label="X">&times;</button>
+
+  <div class="su-pop__body" id="suPopCapture">
+    <h2 class="su-pop__h">{{ su_title }}</h2>
+    <p class="su-pop__p">{{ su_body_pre }}<b>-10%</b>{{ su_body_post }}</p>
+    {%- form 'customer', id: 'suPopForm' -%}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="su-pop__field">
+        <input class="su-pop__input" type="email" name="contact[email]" id="suPopEmail" placeholder="{{ su_placeholder }}" required autocomplete="email">
+        <button class="su-pop__btn" type="submit">{{ su_cta }}</button>
+      </div>
+    {%- endform -%}
+    <p class="su-pop__fine">{{ su_fine1 }}</p>
+  </div>
+
+  <div class="su-pop__body su-pop__hide" id="suPopSuccess">
+    <h2 class="su-pop__h">{{ su_success_h }}</h2>
+    <p class="su-pop__p">{{ su_success_p }}</p>
+    <div class="su-pop__code">
+      <b id="suPopCode">{{ su_code }}</b>
+      <button type="button" class="su-pop__copy" id="suPopCopy">{{ su_copy }}</button>
+    </div>
+    <a class="su-pop__btn" href="/discount/{{ su_code }}?redirect={{ su_redirect }}">{{ su_apply }}</a>
+    <p class="su-pop__fine">{{ su_fine2 }}</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SEEN='su_pop_v1_seen', DONE='su_pop_v1_done', REVEAL='su_pop_v1_reveal', CODE='{{ su_code }}';
+  var COPY_LABEL='{{ su_copy }}', COPIED_LABEL='{{ su_copied }}';
+  var design = window.Shopify && Shopify.designMode;
+  var overlay=document.getElementById('suPopOverlay'), pop=document.getElementById('suPop');
+  var cap=document.getElementById('suPopCapture'), suc=document.getElementById('suPopSuccess');
+  var form=document.getElementById('suPopForm'), opened=false;
+  function ls(get,k,v){ try{ return get?localStorage.getItem(k):localStorage.setItem(k,v);}catch(e){return null;} }
+  function rm(k){ try{localStorage.removeItem(k);}catch(e){} }
+  function open(){ if(opened)return; opened=true; overlay.classList.add('is-open'); pop.classList.add('is-open'); }
+  function close(){ overlay.classList.remove('is-open'); pop.classList.remove('is-open'); }
+  function openSuccess(){ cap.classList.add('su-pop__hide'); suc.classList.remove('su-pop__hide'); open(); }
+  document.querySelectorAll('[data-su-close]').forEach(function(el){el.addEventListener('click',close);});
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+  var copyBtn=document.getElementById('suPopCopy');
+  if(copyBtn){ copyBtn.addEventListener('click',function(){
+    try{ navigator.clipboard.writeText(CODE); copyBtn.textContent=COPIED_LABEL; setTimeout(function(){copyBtn.textContent=COPY_LABEL;},2000); }
+    catch(e){ copyBtn.textContent=CODE; }
+  }); }
+
+  // 1) Revelado tras submit nativo + recarga
+  if(ls(true,REVEAL)){ rm(REVEAL); ls(false,DONE,'1'); setTimeout(openSuccess,400); return; }
+
+  // 2) Ya suscrito/cerrado -> no mostrar (salvo design mode para previsualizar)
+  if(!design && ls(true,DONE)) return;
+
+  // 3) Submit: validar email; si es válido marcar flags y dejar el submit NATIVO (compatible captcha)
+  if(form){
+    form.addEventListener('submit',function(e){
+      var inp=document.getElementById('suPopEmail');
+      var email=(inp.value||'').trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ e.preventDefault(); inp.focus(); return; }
+      ls(false,DONE,'1'); ls(false,REVEAL,'1');
+      // sin preventDefault: Shopify adjunta el token de captcha y procesa el alta
+    });
+  }
+
+  // 4) Disparadores (una vez por navegador)
+  if(design){ setTimeout(open,800); return; }
+  if(ls(true,SEEN)) return;
+  function trigger(){ ls(false,SEEN,'1'); open(); }
+  setTimeout(trigger,12000);
+  window.addEventListener('scroll',function onScroll(){
+    var s=(window.scrollY||document.documentElement.scrollTop);
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    if(h>0 && s/h>0.55){ trigger(); window.removeEventListener('scroll',onScroll); }
+  },{passive:true});
+  setTimeout(function(){
+    document.addEventListener('mouseout',function(e){ if(!e.relatedTarget && e.clientY<=0) trigger(); });
+  },4000);
+})();
+</script>
